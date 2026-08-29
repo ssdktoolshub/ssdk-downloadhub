@@ -23,7 +23,7 @@ class Extractor:
                 }
             except Exception as e:
                 logger.error(f"Error extracting metadata: {str(e)}")
-                raise Exception("Failed to extract metadata. Media might be unavailable or private.")
+                raise Exception(f"yt-dlp error: {str(e)}")
                 
     @staticmethod
     def _parse_formats(formats: list) -> dict:
@@ -50,10 +50,16 @@ class Extractor:
                     "filesize": f.get('filesize') or f.get('filesize_approx')
                 })
                 
+        def safe_int(v):
+            try:
+                return int(v) if v is not None else 0
+            except:
+                return 0
+
         # Sort videos by height desc
-        video_formats.sort(key=lambda x: x['height'], reverse=True)
+        video_formats.sort(key=lambda x: safe_int(x.get('height')), reverse=True)
         # Sort audios by abr desc
-        audio_formats.sort(key=lambda x: x['abr'], reverse=True)
+        audio_formats.sort(key=lambda x: safe_int(x.get('abr')), reverse=True)
         
         return {
             "video": video_formats,
