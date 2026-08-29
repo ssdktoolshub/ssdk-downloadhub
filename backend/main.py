@@ -14,7 +14,8 @@ app = FastAPI(title='SSDK DownloadHub API')
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000,null').split(',')
+raw_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000,null').split(',')
+origins = [origin.strip().rstrip('/') for origin in raw_origins]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
