@@ -38,6 +38,10 @@ class UI {
             
         const isPhotoPost = data.formats.video.length === 0 && data.formats.audio.length === 0;
         
+        // Handle 0 duration
+        const durationText = data.duration > 0 ? `${data.duration}s` : "Unknown";
+        const maxAttr = data.duration > 0 ? `max="${data.duration}"` : "";
+        
         if (resultContainer) {
             resultContainer.innerHTML = `
                 <div class="card result-card" style="margin-top: 24px; padding: 0; overflow: hidden;">
@@ -50,6 +54,7 @@ class UI {
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                 Download Image / Thumbnail
                             </button>
+                            <div id="thumb-status" style="font-size: 12px; color: green; text-align: center; display: none;">Downloading...</div>
                         </div>
                         
                         <!-- Details Section -->
@@ -57,7 +62,7 @@ class UI {
                             <h3 style="margin: 0 0 12px 0; font-size: 1.25rem; font-weight: 700; color: #1E293B; line-height: 1.4;">${data.title}</h3>
                             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                                 <span class="badge" style="background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Platform: ${data.platform}</span>
-                                <span class="badge" style="background: #E0E7FF; color: #4F46E5; padding: 4px 10px; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Duration: ${data.duration}s</span>
+                                <span class="badge" style="background: #E0E7FF; color: #4F46E5; padding: 4px 10px; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Duration: ${durationText}</span>
                             </div>
                             
                             <!-- Download Controls -->
@@ -87,11 +92,11 @@ class UI {
                                             <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                                                 <div style="flex: 1; min-width: 120px;">
                                                     <label style="display: block; font-size: 0.85rem; color: #64748B; margin-bottom: 4px;">Start (seconds):</label>
-                                                    <input type="number" id="trim-start" value="0" min="0" max="${data.duration}" style="width: 100%; padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px;">
+                                                    <input type="number" id="trim-start" value="0" min="0" ${maxAttr} style="width: 100%; padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px;">
                                                 </div>
                                                 <div style="flex: 1; min-width: 120px;">
                                                     <label style="display: block; font-size: 0.85rem; color: #64748B; margin-bottom: 4px;">End (seconds):</label>
-                                                    <input type="number" id="trim-end" value="${data.duration}" min="0" max="${data.duration}" style="width: 100%; padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px;">
+                                                    <input type="number" id="trim-end" value="${data.duration}" min="0" ${maxAttr} style="width: 100%; padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px;">
                                                 </div>
                                             </div>
                                         </div>
@@ -137,12 +142,44 @@ class UI {
                 });
             }
             
-            document.getElementById('download-thumb-btn').addEventListener('click', () => {
-                UI.showLoading("Downloading Image...");
-                window.location.href = `${CONFIG.API_BASE_URL}/download/image?url=${encodeURIComponent(data.thumbnail)}`;
-                setTimeout(() => {
-                    UI.showSuccess("Download requested!");
-                }, 1000);
+            document.getElementById('download-thumb-btn').addEventListener('click', async () => {
+                const status = document.getElementById('thumb-status');
+                status.style.display = 'block';
+                status.style.color = 'blue';
+                status.innerText = "Downloading...";
+                
+                try {
+                    const response = await fetch(`${CONFIG.API_BASE_URL}/download/image?url=${encodeURIComponent(data.thumbnail)}`);
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        
+                        let filename = `image_${Date.now()}.jpg`;
+                        const disposition = response.headers.get('Content-Disposition');
+                        if (disposition && disposition.indexOf('attachment') !== -1) {
+                            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                            const matches = filenameRegex.exec(disposition);
+                            if (matches != null && matches[1]) { 
+                                filename = matches[1].replace(/['"]/g, '');
+                            }
+                        }
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(downloadUrl);
+                        status.style.color = 'green';
+                        status.innerText = "Done!";
+                    } else {
+                        status.style.color = 'red';
+                        status.innerText = "Failed to download image.";
+                    }
+                } catch(e) {
+                    status.style.color = 'red';
+                    status.innerText = "Network Error.";
+                }
             });
         }
     }
