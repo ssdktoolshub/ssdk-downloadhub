@@ -33,7 +33,10 @@ class UI {
         const resultContainer = document.getElementById('result-container');
         
         let videoOptions = data.formats.video.length > 0 
-            ? data.formats.video.map(f => `<option value="${f.format_id}">${f.resolution} (${f.ext})</option>`).join('')
+            ? data.formats.video.map(f => {
+                const codec = f.vcodec && f.vcodec !== 'none' ? f.vcodec.split('.')[0] : 'Unknown';
+                return `<option value="${f.format_id}">${f.resolution} - ${codec.toUpperCase()} (${f.ext})</option>`;
+            }).join('')
             : `<option value="">No Video Available</option>`;
             
         let audioOptions = data.formats.audio.length > 0

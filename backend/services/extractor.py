@@ -10,6 +10,7 @@ class Extractor:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
+            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a']
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:

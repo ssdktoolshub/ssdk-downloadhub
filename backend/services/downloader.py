@@ -21,7 +21,8 @@ class Downloader:
         ydl_opts = Downloader.get_base_opts()
         ydl_opts.update({
             'format': f"{format_id}+bestaudio/best",
-            'outtmpl': output_template
+            'outtmpl': output_template,
+            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a']
         })
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
