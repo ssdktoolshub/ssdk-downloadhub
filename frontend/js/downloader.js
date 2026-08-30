@@ -19,7 +19,11 @@ class Downloader {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
-                let filename = `download_` + Date.now();
+                
+                // Fallback extension based on type
+                const ext = type === 'audio' ? '.mp3' : '.mp4';
+                let filename = `media_${Date.now()}${ext}`;
+                
                 const disposition = response.headers.get('Content-Disposition');
                 if (disposition && disposition.indexOf('attachment') !== -1) {
                     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
@@ -28,6 +32,7 @@ class Downloader {
                         filename = matches[1].replace(/['"]/g, '');
                     }
                 }
+                
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
