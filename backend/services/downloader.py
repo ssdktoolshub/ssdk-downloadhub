@@ -9,7 +9,7 @@ class Downloader:
     def get_base_opts():
         return {
             'quiet': True,
-            'no_warnings': True, 'extractor_args': {'youtube': ['player_client=android']},
+            'no_warnings': True, 'extractor_args': {'youtube': ['player_client=tv']},
             'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe()
         }
 
@@ -54,4 +54,5 @@ class Downloader:
                 if f.endswith('.mp3') or f.endswith('.m4a') or f.endswith('.wav'):
                     return os.path.join(job_dir, f)
             return ""
+
 

@@ -10,7 +10,7 @@ class Extractor:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
-            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a'], 'extractor_args': {'youtube': ['player_client=android']}
+            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a'], 'extractor_args': {'youtube': ['player_client=tv']}
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
@@ -141,4 +141,5 @@ class Extractor:
             "video": video_formats,
             "audio": audio_formats
         }
+
 
