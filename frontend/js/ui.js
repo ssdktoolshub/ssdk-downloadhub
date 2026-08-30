@@ -148,46 +148,14 @@ class UI {
             
             const dlThumbBtn = document.getElementById('download-thumb-btn');
             if (dlThumbBtn) {
-                dlThumbBtn.addEventListener('click', async () => {
+                dlThumbBtn.addEventListener('click', () => {
                     const originalText = dlThumbBtn.innerHTML;
-                    dlThumbBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg> Downloading...`;
-                    dlThumbBtn.style.pointerEvents = 'none';
+                    dlThumbBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg> Opened in New Tab!`;
                     
-                    try {
-                        const response = await fetch(`${CONFIG.API_BASE_URL}/download/image?url=${encodeURIComponent(data.thumbnail)}`);
-                        if (response.ok) {
-                            const blob = await response.blob();
-                            const downloadUrl = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = downloadUrl;
-                            
-                            let filename = `image_${Date.now()}.jpg`;
-                            const disposition = response.headers.get('Content-Disposition');
-                            if (disposition && disposition.indexOf('attachment') !== -1) {
-                                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                                const matches = filenameRegex.exec(disposition);
-                                if (matches != null && matches[1]) { 
-                                    filename = matches[1].replace(/['"]/g, '');
-                                }
-                            }
-                            a.download = filename;
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            window.URL.revokeObjectURL(downloadUrl);
-                            
-                            dlThumbBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg> Downloaded!`;
-                            setTimeout(() => { dlThumbBtn.innerHTML = originalText; dlThumbBtn.style.pointerEvents = 'auto'; }, 3000);
-                        } else {
-                            const rawError = await response.text();
-                            alert(`Error from Server:\n${rawError}`);
-                            dlThumbBtn.innerHTML = originalText;
-                        }
-                    } catch(e) {
-                        alert(`Network Error: ${e.message}`);
-                        dlThumbBtn.innerHTML = originalText;
-                    }
-                    dlThumbBtn.style.pointerEvents = 'auto';
+                    // Directly open the CDN URL in a new tab to bypass all CORS and proxy issues
+                    window.open(data.thumbnail, '_blank');
+                    
+                    setTimeout(() => { dlThumbBtn.innerHTML = originalText; }, 3000);
                 });
             }
         }
