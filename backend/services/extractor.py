@@ -39,6 +39,7 @@ class Extractor:
                         "format_id": f.get('format_id'),
                         "ext": f.get('ext'),
                         "resolution": res,
+                        "vcodec": f.get('vcodec'),
                         "height": f.get('height', 0) or 0,
                         "filesize": f.get('filesize') or f.get('filesize_approx')
                     })

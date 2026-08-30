@@ -1,6 +1,6 @@
 class Downloader {
     static async downloadMedia(type, url, formatId, trim, startTime, endTime) {
-        UI.showLoading(`Downloading ${type}...`);
+        UI.showLoading(`Starting server process... please wait (large files take a minute)`);
         try {
             const response = await fetch(`${CONFIG.API_BASE_URL}/download/${type}`, {
                 method: 'POST',
@@ -24,12 +24,34 @@ class Downloader {
                     }
                 }
                 
-                const blob = await response.blob();
+                const contentLength = response.headers.get('content-length');
+                const total = contentLength ? parseInt(contentLength, 10) : 0;
+                let loaded = 0;
+                
+                const reader = response.body.getReader();
+                const chunks = [];
+                
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.length;
+                    
+                    if (total) {
+                        const percent = Math.round((loaded / total) * 100);
+                        UI.showLoading(`Downloading...`, percent);
+                    } else {
+                        UI.showLoading(`Downloading... ${(loaded / 1024 / 1024).toFixed(1)} MB`);
+                    }
+                }
+                
+                UI.showLoading(`Finalizing file...`);
+                
+                const blob = new Blob(chunks, { type: response.headers.get('content-type') });
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
                 
-                // Fallback extension based on type
                 const ext = type === 'audio' ? '.mp3' : '.mp4';
                 let filename = `media_${Date.now()}${ext}`;
                 
@@ -47,7 +69,7 @@ class Downloader {
                 a.click();
                 a.remove();
                 window.URL.revokeObjectURL(downloadUrl);
-                UI.showSuccess("Download Complete!");
+                UI.showSuccess("Download Complete! Check your downloads folder.");
             } else {
                 const rawText = await response.text();
                 try {

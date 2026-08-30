@@ -1,25 +1,35 @@
 class UI {
-    static showLoading(text) {
+    static showLoading(text, percent = null) {
         const resultContainer = document.getElementById('result-container');
         if (resultContainer) {
-            resultContainer.innerHTML = `<div class="loading" style="padding: 40px 20px; text-align: center; color: #4F46E5; font-weight: 600; font-size: 1.1rem; background: var(--surface-glass); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-top: 20px; animation: pulse 2s infinite;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 10px; display: block; margin: 0 auto;">
+            let progressHtml = '';
+            if (percent !== null) {
+                progressHtml = `
+                <div style="width: 100%; max-width: 300px; height: 8px; background: #E2E8F0; border-radius: 10px; margin: 15px auto 0; overflow: hidden;">
+                    <div style="width: ${percent}%; height: 100%; background: linear-gradient(90deg, #4F46E5, #059669); transition: width 0.3s ease;"></div>
+                </div>
+                <div style="font-size: 0.9rem; color: #64748B; margin-top: 8px;">${percent}% Downloaded</div>`;
+            }
+            
+            resultContainer.innerHTML = `<div class="loading" style="padding: 40px 20px; text-align: center; color: #4F46E5; font-weight: 600; font-size: 1.1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-top: 20px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 12px; display: block; margin: 0 auto;">
                     <path d="M21 12a9 9 0 11-6.219-8.56"></path>
                 </svg>
                 ${text}
+                ${progressHtml}
             </div>`;
         }
     }
     static showSuccess(text) {
         const resultContainer = document.getElementById('result-container');
         if (resultContainer) {
-            resultContainer.innerHTML += `<div class="success" style="color: #059669; background: #D1FAE5; padding: 15px; border-radius: 12px; font-weight: 600; margin-top: 15px; text-align: center; border: 1px solid #10B981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">${text}</div>`;
+            resultContainer.innerHTML += `<div class="success" style="color: #059669; background: #D1FAE5; padding: 15px; border-radius: 12px; font-weight: 600; margin-top: 15px; text-align: center; border: 1px solid #10B981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); animation: fadeIn 0.5s ease;">${text}</div>`;
         }
     }
     static showError(message) {
         const resultContainer = document.getElementById('result-container');
         if (resultContainer) {
-            resultContainer.innerHTML = `<div class="error" style="color: #DC2626; background: #FEE2E2; padding: 20px; border-radius: 12px; border: 1px solid #EF4444; margin-top: 20px; font-weight: 500; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
+            resultContainer.innerHTML = `<div class="error" style="color: #DC2626; background: #FEE2E2; padding: 20px; border-radius: 12px; border: 1px solid #EF4444; margin-top: 20px; font-weight: 500; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); animation: fadeIn 0.5s ease;">
                 <div style="display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 5px;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     <strong>Error</strong>
@@ -34,13 +44,17 @@ class UI {
         
         let videoOptions = data.formats.video.length > 0 
             ? data.formats.video.map(f => {
-                const codec = f.vcodec && f.vcodec !== 'none' ? f.vcodec.split('.')[0] : 'Unknown';
-                return `<option value="${f.format_id}">${f.resolution} - ${codec.toUpperCase()} (${f.ext})</option>`;
+                const codec = f.vcodec && f.vcodec !== 'none' ? f.vcodec.split('.')[0].toUpperCase() : 'Unknown';
+                const size = f.filesize ? ` - ${(f.filesize / 1024 / 1024).toFixed(1)}MB` : '';
+                return `<option value="${f.format_id}">${f.resolution} - ${codec}${size} (${f.ext})</option>`;
             }).join('')
             : `<option value="">No Video Available</option>`;
             
         let audioOptions = data.formats.audio.length > 0
-            ? data.formats.audio.map(f => `<option value="${f.format_id}">${f.abr}kbps (${f.ext})</option>`).join('')
+            ? data.formats.audio.map(f => {
+                const size = f.filesize ? ` - ${(f.filesize / 1024 / 1024).toFixed(1)}MB` : '';
+                return `<option value="${f.format_id}">${f.abr}kbps${size} (${f.ext})</option>`;
+            }).join('')
             : `<option value="">No Audio Available</option>`;
             
         const isPhotoPost = data.formats.video.length === 0 && data.formats.audio.length === 0;
@@ -49,7 +63,7 @@ class UI {
         
         if (resultContainer) {
             resultContainer.innerHTML = `
-                <div class="card result-card" style="margin-top: 24px; padding: 0; overflow: hidden; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5);">
+                <div class="card result-card" style="margin-top: 24px; padding: 0; overflow: hidden; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); animation: slideUp 0.4s ease;">
                     <div style="display: flex; flex-direction: column; md:flex-direction: row; gap: 30px; padding: 35px;">
                         
                         <!-- Thumbnail Section -->
@@ -77,7 +91,7 @@ class UI {
                                 <div style="display: flex; flex-direction: column; gap: 20px;">
                                     
                                     <div>
-                                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B; font-size: 0.95rem;">Select Video Quality:</label>
+                                        <label style="display: block; font-weight: 700; margin-bottom: 8px; color: #1E293B; font-size: 0.95rem;">Select Video Quality (Size):</label>
                                         <select id="video-format" style="width: 100%; padding: 14px 18px; border: 2px solid #CBD5E1; border-radius: 12px; background: white; font-size: 1.05rem; outline: none; cursor: pointer; transition: all 0.3s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
                                             ${videoOptions}
                                         </select>
@@ -154,10 +168,7 @@ class UI {
                 dlThumbBtn.addEventListener('click', () => {
                     const originalText = dlThumbBtn.innerHTML;
                     dlThumbBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3"><path d="M20 6L9 17l-5-5"></path></svg> Opened in New Tab!`;
-                    
-                    // Directly open the CDN URL in a new tab to bypass all CORS and proxy issues
                     window.open(data.thumbnail, '_blank');
-                    
                     setTimeout(() => { dlThumbBtn.innerHTML = originalText; }, 3000);
                 });
             }
@@ -170,6 +181,8 @@ if (!document.getElementById('spinner-style')) {
     style.id = 'spinner-style';
     style.innerHTML = `@keyframes spin { 100% { transform: rotate(360deg); } }
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .result-card { border: 1px solid rgba(255, 255, 255, 0.4); }
     button:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important; }
     select:focus, input[type="number"]:focus { border-color: #4F46E5 !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important; }
