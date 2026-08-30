@@ -3,29 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SSDK DownloadHub | Download. Trim. Simplified.</title>
+    <title>SSDK DownloadHub | Universal Media Tools</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/base.css">
+    <style>
+        .hero { text-align: center; padding: 60px 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; border-radius: 0 0 30px 30px; margin-bottom: 40px; box-shadow: var(--shadow-md); }
+        .hero h1 { font-size: 3rem; margin-bottom: 15px; font-weight: 800; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 30px; }
+        .platform-section { margin-bottom: 50px; }
+        .platform-title { font-size: 1.8rem; font-weight: 700; color: #1E293B; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #E2E8F0; padding-bottom: 10px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .tool-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid #E2E8F0; transition: all 0.2s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-color: var(--primary); }
+        .tool-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 15px; background: #F1F5F9; color: var(--primary); }
+        .tool-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #0F172A; }
+        .tool-card p { font-size: 0.85rem; color: #64748B; margin: 0; }
+        .youtube-color { color: #FF0000; }
+        .facebook-color { color: #1877F2; }
+        .instagram-color { color: #E1306C; }
+        .twitter-color { color: #1DA1F2; }
+    </style>
 </head>
-<body>
-    <header class="site-header">
-        <div class="container header-inner">
-            <div class="logo">SSDK DownloadHub</div>
-            <nav class="main-nav">
-                <a href="index.html">Home</a>
-                <a href="pages/universal-downloader.html">Universal</a>
+<body style="background: #F8FAFC;">
+    <header class="site-header" style="background: white; padding: 15px 0; border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 100;">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <a href="index.html" class="logo" style="font-size: 1.5rem; font-weight: 800; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                SSDK DownloadHub
+            </a>
+            <nav style="display: flex; gap: 20px;">
+                <a href="pages/universal-downloader.html" style="text-decoration: none; color: #475569; font-weight: 600;">Universal Tool</a>
+                <a href="pages/about.html" style="text-decoration: none; color: #475569; font-weight: 600;">About</a>
             </nav>
         </div>
     </header>
-    <main class="container">
-        <section class="hero">
-            <h1>SSDK DownloadHub</h1>
-            <p>Download. Trim. Simplified.</p>
-            <a href="pages/universal-downloader.html" class="btn btn-primary">Go to Universal Downloader</a>
+
+    <section class="hero">
+        <div class="container">
+            <h1>All-In-One Media Downloader</h1>
+            <p>Download Videos, Audio, Images, and Thumbnails from any platform.</p>
+            <a href="pages/universal-downloader.html" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.1rem; padding: 12px 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">Try Universal Downloader</a>
+        </div>
+    </section>
+
+    <main class="container" style="padding-bottom: 60px;">
+        <!-- YouTube Section -->
+        <section class="platform-section">
+            <h2 class="platform-title"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="youtube-color"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"/><polygon fill="white" points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg> YouTube Tools</h2>
+            <div class="tools-grid">
+                <a href="pages/youtube-video-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"></path><rect x="3" y="6" width="12" height="12" rx="2" ry="2"></rect></svg></div>
+                    <h3>Video Downloader</h3><p>Download YT videos in high quality MP4.</p>
+                </a>
+                <a href="pages/youtube-audio-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"></circle><circle cx="17.5" cy="15.5" r="2.5"></circle><path d="M8 17V5l12-2v12"></path></svg></div>
+                    <h3>Audio Downloader</h3><p>Convert YT videos to high quality MP3.</p>
+                </a>
+                <a href="pages/youtube-thumbnail-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+                    <h3>Thumbnail Downloader</h3><p>Get original HD thumbnails.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Instagram Section -->
+        <section class="platform-section">
+            <h2 class="platform-title"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="instagram-color"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> Instagram Tools</h2>
+            <div class="tools-grid">
+                <a href="pages/instagram-reels-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"></path><rect x="3" y="6" width="12" height="12" rx="2" ry="2"></rect></svg></div>
+                    <h3>Reels Downloader</h3><p>Download HD Instagram Reels.</p>
+                </a>
+                <a href="pages/instagram-image-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+                    <h3>Photo Downloader</h3><p>Download HD IG Image Posts.</p>
+                </a>
+                <a href="pages/instagram-video-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></div>
+                    <h3>Video Downloader</h3><p>Save normal IG Video posts.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Facebook Section -->
+        <section class="platform-section">
+            <h2 class="platform-title"><svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="facebook-color"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg> Facebook Tools</h2>
+            <div class="tools-grid">
+                <a href="pages/facebook-video-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"></path><rect x="3" y="6" width="12" height="12" rx="2" ry="2"></rect></svg></div>
+                    <h3>Video Downloader</h3><p>Download FB Videos in 1080p.</p>
+                </a>
+                <a href="pages/facebook-image-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+                    <h3>Photo Downloader</h3><p>Download FB Image Posts.</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Twitter Section -->
+        <section class="platform-section">
+            <h2 class="platform-title"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="twitter-color"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg> X (Twitter) Tools</h2>
+            <div class="tools-grid">
+                <a href="pages/twitter-video-downloader.html" class="tool-card">
+                    <div class="tool-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"></path><rect x="3" y="6" width="12" height="12" rx="2" ry="2"></rect></svg></div>
+                    <h3>Video Downloader</h3><p>Download X Videos & GIFs.</p>
+                </a>
+            </div>
         </section>
     </main>
-    <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
 </body>
 </html>
