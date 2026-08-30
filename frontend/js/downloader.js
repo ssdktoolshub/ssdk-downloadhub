@@ -1,8 +1,8 @@
 class Downloader {
     static async downloadMedia(type, url, formatId, trim, startTime, endTime) {
-        UI.showLoading(Downloading  + type + ...);
+        UI.showLoading(`Downloading ${type}...`);
         try {
-            const response = await fetch(${CONFIG.API_BASE_URL}/download/, {
+            const response = await fetch(`${CONFIG.API_BASE_URL}/download/${type}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -19,8 +19,7 @@ class Downloader {
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = downloadUrl;
-                // Try to get filename from content-disposition header if available, else generic
-                let filename = download_ + Date.now();
+                let filename = `download_` + Date.now();
                 const disposition = response.headers.get('Content-Disposition');
                 if (disposition && disposition.indexOf('attachment') !== -1) {
                     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
