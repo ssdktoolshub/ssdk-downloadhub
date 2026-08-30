@@ -15,6 +15,15 @@ class Downloader {
             });
             
             if (response.ok) {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const result = await response.json();
+                    if (!result.success) {
+                        UI.showError(result.error ? result.error.message : "Download failed on server.");
+                        return;
+                    }
+                }
+                
                 const blob = await response.blob();
                 const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -40,11 +49,16 @@ class Downloader {
                 window.URL.revokeObjectURL(downloadUrl);
                 UI.showSuccess("Download Complete!");
             } else {
-                const result = await response.json();
-                UI.showError(result.error ? result.error.message : "Download failed.");
+                const rawText = await response.text();
+                try {
+                    const result = JSON.parse(rawText);
+                    UI.showError(result.error ? result.error.message : `HTTP ${response.status}: ${JSON.stringify(result)}`);
+                } catch(e) {
+                    UI.showError(`HTTP ${response.status}: ${rawText}`);
+                }
             }
         } catch (error) {
-            UI.showError("Network error during download.");
+            UI.showError(`Network error during download: ${error.message}`);
         }
     }
 }
