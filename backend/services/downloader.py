@@ -1,20 +1,28 @@
 import yt_dlp
 import os
 import uuid
+import imageio_ffmpeg
 from services.file_manager import FileManager
 
 class Downloader:
+    @staticmethod
+    def get_base_opts():
+        return {
+            'quiet': True,
+            'no_warnings': True,
+            'ffmpeg_location': imageio_ffmpeg.get_ffmpeg_exe()
+        }
+
     @staticmethod
     def download_video(url: str, format_id: str, job_id: str) -> str:
         job_dir = FileManager.create_job_dir(job_id)
         output_template = os.path.join(job_dir, '%(title)s.%(ext)s')
         
-        ydl_opts = {
+        ydl_opts = Downloader.get_base_opts()
+        ydl_opts.update({
             'format': f"{format_id}+bestaudio/best",
-            'outtmpl': output_template,
-            'quiet': True,
-            'no_warnings': True,
-        }
+            'outtmpl': output_template
+        })
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.extract_info(url, download=True)
@@ -28,17 +36,16 @@ class Downloader:
         job_dir = FileManager.create_job_dir(job_id)
         output_template = os.path.join(job_dir, '%(title)s.%(ext)s')
         
-        ydl_opts = {
+        ydl_opts = Downloader.get_base_opts()
+        ydl_opts.update({
             'format': format_id,
             'outtmpl': output_template,
-            'quiet': True,
-            'no_warnings': True,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
-            }],
-        }
+            }]
+        })
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.extract_info(url, download=True)

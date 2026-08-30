@@ -6,3 +6,5 @@ pydantic
 httpx
 slowapi
 python-multipart
+
+imageio-ffmpeg

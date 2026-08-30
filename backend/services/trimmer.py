@@ -1,5 +1,6 @@
 import subprocess
 import os
+import imageio_ffmpeg
 
 class Trimmer:
     @staticmethod
@@ -10,8 +11,10 @@ class Trimmer:
         base, ext = os.path.splitext(input_path)
         output_path = f"{base}_trimmed{ext}"
         
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        
         command = [
-            'ffmpeg', '-y',
+            ffmpeg_exe, '-y',
             '-i', input_path,
             '-ss', str(start),
             '-to', str(end),
