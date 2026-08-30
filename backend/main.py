@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from routes import health, analyze, video, audio
+from routes import health, analyze, video, audio, image
 from utils.logging_config import setup_logging
 import os
 
@@ -29,6 +29,7 @@ app.include_router(health.router, prefix='/api', tags=['health'])
 app.include_router(analyze.router, prefix='/api', tags=['analyze'])
 app.include_router(video.router, prefix='/api', tags=['video'])
 app.include_router(audio.router, prefix='/api', tags=['audio'])
+app.include_router(image.router, prefix='/api', tags=['image'])
 
 @app.get('/')
 @limiter.limit("10/minute")

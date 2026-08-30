@@ -35,6 +35,8 @@ class UI {
         let audioOptions = data.formats.audio.length > 0
             ? data.formats.audio.map(f => `<option value="${f.format_id}">${f.abr}kbps (${f.ext})</option>`).join('')
             : `<option value="">No Audio Available</option>`;
+            
+        const isPhotoPost = data.formats.video.length === 0 && data.formats.audio.length === 0;
         
         if (resultContainer) {
             resultContainer.innerHTML = `
@@ -42,12 +44,16 @@ class UI {
                     <div style="display: flex; flex-direction: column; md:flex-direction: row; gap: 20px; padding: 24px;">
                         
                         <!-- Thumbnail Section -->
-                        <div style="flex: 0 0 auto; width: 100%; max-width: 300px; margin: 0 auto;">
+                        <div style="flex: 0 0 auto; width: 100%; max-width: 300px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;">
                             <img src="${data.thumbnail}" alt="Thumbnail" class="result-thumbnail" style="width: 100%; height: auto; max-height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <button id="download-thumb-btn" style="width: 100%; padding: 10px; border-radius: 8px; background: #E2E8F0; color: #334155; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                Download Image / Thumbnail
+                            </button>
                         </div>
                         
                         <!-- Details Section -->
-                        <div style="flex: 1; min-width: 0;">
+                        <div style="flex: 1; min-width: 0; ${isPhotoPost ? 'display: none;' : ''}">
                             <h3 style="margin: 0 0 12px 0; font-size: 1.25rem; font-weight: 700; color: #1E293B; line-height: 1.4;">${data.title}</h3>
                             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                                 <span class="badge" style="background: #E2E8F0; color: #475569; padding: 4px 10px; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Platform: ${data.platform}</span>
@@ -88,9 +94,6 @@ class UI {
                                                     <input type="number" id="trim-end" value="${data.duration}" min="0" max="${data.duration}" style="width: 100%; padding: 8px; border: 1px solid #CBD5E1; border-radius: 6px;">
                                                 </div>
                                             </div>
-                                            <div style="margin-top: 10px; font-size: 0.8rem; color: #94A3B8;">
-                                                Enter exact start and end times to trim the file on our servers.
-                                            </div>
                                         </div>
                                     </div>
                                     
@@ -98,11 +101,9 @@ class UI {
                                 
                                 <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
                                     <button id="download-video-btn" class="btn btn-primary" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 8px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                         Download Video
                                     </button>
                                     <button id="download-audio-btn" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 8px; background: #10B981; color: white; border: none; font-weight: 600; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                                         Audio Only
                                     </button>
                                 </div>
@@ -113,27 +114,40 @@ class UI {
             `;
             
             // Initialize Trimming
-            Trimming.init(data.duration);
+            if (!isPhotoPost) Trimming.init(data.duration);
             
             // Bind buttons
-            document.getElementById('download-video-btn').addEventListener('click', () => {
-                const formatId = document.getElementById('video-format').value;
-                if (!formatId) { UI.showError("No video format selected."); return; }
-                const trimData = Trimming.getValues();
-                Downloader.downloadMedia('video', window.currentMediaUrl, formatId, trimData.trim, trimData.start_time, trimData.end_time);
-            });
+            const dlVideoBtn = document.getElementById('download-video-btn');
+            if (dlVideoBtn) {
+                dlVideoBtn.addEventListener('click', () => {
+                    const formatId = document.getElementById('video-format').value;
+                    if (!formatId) { UI.showError("No video format selected."); return; }
+                    const trimData = Trimming.getValues();
+                    Downloader.downloadMedia('video', window.currentMediaUrl, formatId, trimData.trim, trimData.start_time, trimData.end_time);
+                });
+            }
             
-            document.getElementById('download-audio-btn').addEventListener('click', () => {
-                const formatId = document.getElementById('audio-format').value;
-                if (!formatId) { UI.showError("No audio format selected."); return; }
-                const trimData = Trimming.getValues();
-                Downloader.downloadMedia('audio', window.currentMediaUrl, formatId, trimData.trim, trimData.start_time, trimData.end_time);
+            const dlAudioBtn = document.getElementById('download-audio-btn');
+            if (dlAudioBtn) {
+                dlAudioBtn.addEventListener('click', () => {
+                    const formatId = document.getElementById('audio-format').value;
+                    if (!formatId) { UI.showError("No audio format selected."); return; }
+                    const trimData = Trimming.getValues();
+                    Downloader.downloadMedia('audio', window.currentMediaUrl, formatId, trimData.trim, trimData.start_time, trimData.end_time);
+                });
+            }
+            
+            document.getElementById('download-thumb-btn').addEventListener('click', () => {
+                UI.showLoading("Downloading Image...");
+                window.location.href = `${CONFIG.API_BASE_URL}/download/image?url=${encodeURIComponent(data.thumbnail)}`;
+                setTimeout(() => {
+                    UI.showSuccess("Download requested!");
+                }, 1000);
             });
         }
     }
 }
 
-// Add simple spinner animation to document if not exists
 if (!document.getElementById('spinner-style')) {
     const style = document.createElement('style');
     style.id = 'spinner-style';
