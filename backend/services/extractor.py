@@ -1,11 +1,16 @@
 import yt_dlp
 import logging
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
 class Extractor:
     @staticmethod
     def extract_metadata(url: str) -> dict:
+        parsed = urlparse(url)
+        if 'youtube.com' in parsed.netloc or 'youtu.be' in parsed.netloc:
+            return Extractor._extract_youtube(url)
+            
         clients_to_try = ['tv', 'android_vr', 'mweb', 'web_creator', 'ios']
         
         for client in clients_to_try:
@@ -35,6 +40,85 @@ class Extractor:
         raise Exception("YouTube has temporarily blocked your Render server IP for bot-like activity. Please try again later or add cookies.")
 
     @staticmethod
+    def _extract_youtube(url: str) -> dict:
+        try:
+            from pytubefix import YouTube
+            yt = YouTube(url, 'WEB')
+            
+            video_formats = []
+            audio_formats = []
+            
+            # Map pytubefix streams to our format
+            for stream in yt.streams:
+                if stream.includes_video_track and not stream.includes_audio_track:
+                    # Video only (DASH)
+                    res = getattr(stream, 'resolution', None)
+                    if res:
+                        res_val = int(res.replace('p', ''))
+                        vcodec = getattr(stream, 'video_codec', 'unknown')
+                        if 'av01' in vcodec or 'vp9' in vcodec:
+                            continue # skip av1/vp9 for better compatibility
+                            
+                        if res_val >= 2160: label = "4K (2160p)"
+                        elif res_val >= 1440: label = "2K (1440p)"
+                        elif res_val >= 1000: label = "HD (1080p)"
+                        elif res_val >= 700: label = "HD (720p)"
+                        elif res_val >= 480: label = "SD (480p)"
+                        elif res_val >= 360: label = "SD (360p)"
+                        else: label = f"Low ({res_val}p)"
+                        
+                        video_formats.append({
+                            "format_id": str(stream.itag),
+                            "ext": stream.subtype,
+                            "resolution": label,
+                            "vcodec": vcodec,
+                            "height": res_val,
+                            "filesize": getattr(stream, 'filesize', 0)
+                        })
+                elif stream.includes_audio_track and not stream.includes_video_track:
+                    # Audio only
+                    abr = getattr(stream, 'abr', None)
+                    if abr:
+                        abr_val = int(abr.replace('kbps', ''))
+                        audio_formats.append({
+                            "format_id": str(stream.itag),
+                            "ext": stream.subtype,
+                            "abr": abr_val,
+                            "filesize": getattr(stream, 'filesize', 0)
+                        })
+                        
+            # Sort
+            video_formats.sort(key=lambda x: x['height'], reverse=True)
+            audio_formats.sort(key=lambda x: x['abr'], reverse=True)
+            
+            # Deduplicate video
+            unique_v = {}
+            for v in video_formats:
+                if v['height'] not in unique_v:
+                    unique_v[v['height']] = v
+            video_formats = list(unique_v.values())
+            
+            # Deduplicate audio
+            unique_a = {}
+            for a in audio_formats:
+                if a['abr'] not in unique_a:
+                    unique_a[a['abr']] = a
+            audio_formats = list(unique_a.values())
+
+            return {
+                "title": yt.title,
+                "duration": yt.length,
+                "thumbnail": yt.thumbnail_url,
+                "formats": {
+                    "video": video_formats,
+                    "audio": audio_formats
+                },
+                "extractor": "youtube"
+            }
+        except Exception as e:
+            raise Exception(f"pytubefix error: {str(e)}")
+
+    @staticmethod
     def _parse_formats(formats: list) -> dict:
         video_formats = []
         audio_formats = []
@@ -45,11 +129,9 @@ class Extractor:
             except:
                 return 0
 
-        # Bucket video formats by quality to avoid duplicates
         quality_buckets = {}
 
         for f in formats:
-            # AUDIO
             if f.get('acodec') != 'none' and f.get('acodec') is not None and f.get('vcodec') == 'none':
                 fsize = f.get('filesize') or f.get('filesize_approx')
                 if not fsize and f.get('abr') and f.get('duration'):
@@ -62,46 +144,24 @@ class Extractor:
                     "filesize": fsize
                 })
 
-            # VIDEO
             if f.get('vcodec') != 'none' and f.get('vcodec') is not None:
                 vcodec = str(f.get('vcodec')).lower()
                 
-                # Exclude AV1 as it is rarely supported by native players like Windows Media Player
                 if 'av01' in vcodec or 'av1' in vcodec:
                     continue
                 
                 w = safe_int(f.get('width'))
                 h = safe_int(f.get('height'))
-                
-                if w > 0 and h > 0:
-                    short_edge = min(w, h)
-                else:
-                    short_edge = h if h > 0 else 0
+                short_edge = min(w, h) if w > 0 and h > 0 else (h if h > 0 else 0)
 
-                # Determine standard quality label
-                if short_edge == 0:
-                    continue
-                elif short_edge >= 2160:
-                    quality = 2160
-                    label = "4K (2160p)"
-                elif short_edge >= 1440:
-                    quality = 1440
-                    label = "2K (1440p)"
-                elif short_edge >= 1000:
-                    quality = 1080
-                    label = "HD (1080p)"
-                elif short_edge >= 700:
-                    quality = 720
-                    label = "HD (720p)"
-                elif short_edge >= 480:
-                    quality = 480
-                    label = "SD (480p)"
-                elif short_edge >= 360:
-                    quality = 360
-                    label = "SD (360p)"
-                else:
-                    quality = 240
-                    label = "Low (240p)"
+                if short_edge == 0: continue
+                elif short_edge >= 2160: quality = 2160; label = "4K (2160p)"
+                elif short_edge >= 1440: quality = 1440; label = "2K (1440p)"
+                elif short_edge >= 1000: quality = 1080; label = "HD (1080p)"
+                elif short_edge >= 700: quality = 720; label = "HD (720p)"
+                elif short_edge >= 480: quality = 480; label = "SD (480p)"
+                elif short_edge >= 360: quality = 360; label = "SD (360p)"
+                else: quality = 240; label = "Low (240p)"
 
                 fsize = f.get('filesize') or f.get('filesize_approx')
                 if not fsize and f.get('tbr') and f.get('duration'):
@@ -116,7 +176,6 @@ class Extractor:
                     "filesize": fsize
                 }
                 
-                # If bucket empty, add it. If not, only replace if this format is better (H.264 > others)
                 if quality not in quality_buckets:
                     quality_buckets[quality] = fmt
                 else:
@@ -130,13 +189,8 @@ class Extractor:
                         quality_buckets[quality] = fmt
                         
         video_formats = list(quality_buckets.values())
-
-        # Sort videos by height desc
         video_formats.sort(key=lambda x: safe_int(x.get('height')), reverse=True)
-        # Sort audios by abr desc
-        audio_formats.sort(key=lambda x: safe_int(x.get('abr')), reverse=True)
         
-        # Deduplicate audios by ABR
         unique_audio = {}
         for a in audio_formats:
             abr = safe_int(a.get('abr'))
