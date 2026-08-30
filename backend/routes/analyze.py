@@ -22,3 +22,18 @@ def analyze_url(req: AnalyzeRequest):
         return success_response(metadata)
     except Exception as e:
         return error_response("ANALYSIS_FAILED", str(e))
+
+@router.post('/analyze_debug')
+def analyze_debug(req: AnalyzeRequest):
+    import yt_dlp
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'skip_download': True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            info = ydl.extract_info(req.url, download=False)
+            return success_response(info)
+        except Exception as e:
+            return error_response("FAILED", str(e))
