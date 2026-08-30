@@ -1,8 +1,8 @@
 class Trimming {
     static init(duration) {
-        this.duration = duration;
+        this.duration = duration ? parseFloat(duration) : 0;
         this.start = 0;
-        this.end = duration;
+        this.end = this.duration;
         
         const trimToggle = document.getElementById('trim-toggle');
         if (trimToggle) {
@@ -18,8 +18,20 @@ class Trimming {
         
         const startInput = document.getElementById('trim-start');
         const endInput = document.getElementById('trim-end');
-        if (startInput) startInput.addEventListener('change', (e) => this.start = parseInt(e.target.value));
-        if (endInput) endInput.addEventListener('change', (e) => this.end = parseInt(e.target.value));
+        
+        if (startInput) {
+            startInput.addEventListener('change', (e) => {
+                const val = parseFloat(e.target.value);
+                this.start = isNaN(val) ? 0 : val;
+            });
+        }
+        
+        if (endInput) {
+            endInput.addEventListener('change', (e) => {
+                const val = parseFloat(e.target.value);
+                this.end = isNaN(val) ? this.duration : val;
+            });
+        }
     }
     
     static getValues() {
