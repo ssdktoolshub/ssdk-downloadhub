@@ -16,7 +16,7 @@ class Downloader:
     @staticmethod
     def download_video(url: str, format_id: str, job_id: str) -> str:
         job_dir = FileManager.create_job_dir(job_id)
-        output_template = os.path.join(job_dir, '%(title)s.%(ext)s')
+        output_template = os.path.join(job_dir, '%(id)s.%(ext)s')
         
         ydl_opts = Downloader.get_base_opts()
         ydl_opts.update({
@@ -34,7 +34,7 @@ class Downloader:
     @staticmethod
     def download_audio(url: str, format_id: str, job_id: str) -> str:
         job_dir = FileManager.create_job_dir(job_id)
-        output_template = os.path.join(job_dir, '%(title)s.%(ext)s')
+        output_template = os.path.join(job_dir, '%(id)s.%(ext)s')
         
         ydl_opts = Downloader.get_base_opts()
         ydl_opts.update({
@@ -50,6 +50,6 @@ class Downloader:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.extract_info(url, download=True)
             for f in os.listdir(job_dir):
-                if f.endswith('.mp3') or f.endswith('.m4a'):
+                if f.endswith('.mp3') or f.endswith('.m4a') or f.endswith('.wav'):
                     return os.path.join(job_dir, f)
             return ""
