@@ -1,7 +1,7 @@
 import uuid
 import os
 from fastapi import APIRouter, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from schemas.requests import AudioDownloadRequest
 from schemas.responses import error_response
 from services.downloader import Downloader
@@ -16,7 +16,7 @@ def download_audio_route(req: AudioDownloadRequest, background_tasks: Background
     try:
         file_path = Downloader.download_audio(req.url, req.format_id, job_id)
         if not file_path:
-            return error_response("DOWNLOAD_FAILED", "Could not download audio")
+            return JSONResponse(status_code=400, content=error_response("DOWNLOAD_FAILED", "Could not download audio"))
             
         if req.trim:
             file_path = Trimmer.trim_media(file_path, req.start_time, req.end_time)
@@ -28,4 +28,4 @@ def download_audio_route(req: AudioDownloadRequest, background_tasks: Background
         return FileResponse(path=file_path, filename=filename, media_type='audio/mpeg')
     except Exception as e:
         FileManager.cleanup_job(job_id)
-        return error_response("PROCESSING_FAILED", str(e))
+        return JSONResponse(status_code=400, content=error_response("PROCESSING_FAILED", str(e)))
