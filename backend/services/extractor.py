@@ -10,7 +10,7 @@ class Extractor:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
-            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a']
+            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a'], 'extractor_args': {'youtube': ['player_client=android']}
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
@@ -43,11 +43,15 @@ class Extractor:
         for f in formats:
             # AUDIO
             if f.get('acodec') != 'none' and f.get('acodec') is not None and f.get('vcodec') == 'none':
+                fsize = f.get('filesize') or f.get('filesize_approx')
+                if not fsize and f.get('abr') and info.get('duration'):
+                    fsize = int((f.get('abr') * 1024 / 8) * info.get('duration'))
+                    
                 audio_formats.append({
                     "format_id": f.get('format_id'),
                     "ext": f.get('ext'),
                     "abr": f.get('abr', 0) or 0,
-                    "filesize": f.get('filesize') or f.get('filesize_approx')
+                    "filesize": fsize
                 })
 
             # VIDEO
@@ -91,13 +95,17 @@ class Extractor:
                     quality = 240
                     label = "Low (240p)"
 
+                fsize = f.get('filesize') or f.get('filesize_approx')
+                if not fsize and f.get('tbr') and info.get('duration'):
+                    fsize = int((f.get('tbr') * 1024 / 8) * info.get('duration'))
+                
                 fmt = {
                     "format_id": f.get('format_id'),
                     "ext": f.get('ext'),
                     "resolution": label,
                     "vcodec": vcodec,
                     "height": quality,
-                    "filesize": f.get('filesize') or f.get('filesize_approx')
+                    "filesize": fsize
                 }
                 
                 # If bucket empty, add it. If not, only replace if this format is better (H.264 > others)
@@ -133,3 +141,4 @@ class Extractor:
             "video": video_formats,
             "audio": audio_formats
         }
+
