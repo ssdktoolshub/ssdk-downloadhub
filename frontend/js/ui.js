@@ -52,12 +52,10 @@ class UI {
                                 <img src="${data.thumbnail}" alt="Thumbnail" class="result-thumbnail" style="width: 100%; height: auto; max-height: 450px; object-fit: cover; display: block;">
                             </div>
                             
-                            <!-- USING A TAG TARGET BLANK FOR IMAGES TO BYPASS PROXY -->
-                            <a href="${data.thumbnail}" target="_blank" download="image.jpg" style="text-decoration: none; width: 100%; padding: 12px; border-radius: 10px; background: #F1F5F9; color: #0F172A; border: 1px solid #E2E8F0; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;">
+                            <button id="download-thumb-btn" style="width: 100%; padding: 12px; border-radius: 10px; background: #F1F5F9; color: #0F172A; border: 1px solid #E2E8F0; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s;">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                View / Download Image
-                            </a>
-                            <div style="font-size: 12px; color: #64748B; text-align: center;">Opens securely in a new tab. Right-click and "Save Image As".</div>
+                                Download Image / Thumbnail
+                            </button>
                         </div>
                         
                         <!-- Details Section -->
@@ -144,6 +142,50 @@ class UI {
                     if (!formatId) { UI.showError("No audio format selected."); return; }
                     const trimData = Trimming.getValues();
                     Downloader.downloadMedia('audio', window.currentMediaUrl, formatId, trimData.trim, trimData.start_time, trimData.end_time);
+                });
+            }
+            
+            const dlThumbBtn = document.getElementById('download-thumb-btn');
+            if (dlThumbBtn) {
+                dlThumbBtn.addEventListener('click', async () => {
+                    const originalText = dlThumbBtn.innerHTML;
+                    dlThumbBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg> Downloading...`;
+                    dlThumbBtn.style.pointerEvents = 'none';
+                    
+                    try {
+                        const response = await fetch(`${CONFIG.API_BASE_URL}/download/image?url=${encodeURIComponent(data.thumbnail)}`);
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const downloadUrl = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = downloadUrl;
+                            
+                            let filename = `image_${Date.now()}.jpg`;
+                            const disposition = response.headers.get('Content-Disposition');
+                            if (disposition && disposition.indexOf('attachment') !== -1) {
+                                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                const matches = filenameRegex.exec(disposition);
+                                if (matches != null && matches[1]) { 
+                                    filename = matches[1].replace(/['"]/g, '');
+                                }
+                            }
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(downloadUrl);
+                            
+                            dlThumbBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg> Downloaded!`;
+                        } else {
+                            const err = await response.json();
+                            alert(err.error?.message || "Failed to download image securely.");
+                            dlThumbBtn.innerHTML = originalText;
+                        }
+                    } catch(e) {
+                        alert("Network error. The server could not download the image.");
+                        dlThumbBtn.innerHTML = originalText;
+                    }
+                    dlThumbBtn.style.pointerEvents = 'auto';
                 });
             }
         }
