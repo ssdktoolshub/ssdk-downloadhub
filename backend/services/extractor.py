@@ -6,25 +6,33 @@ logger = logging.getLogger(__name__)
 class Extractor:
     @staticmethod
     def extract_metadata(url: str) -> dict:
-        ydl_opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'skip_download': True,
-            'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a'], 'extractor_args': {'youtube': ['player_client=tv']}
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        clients_to_try = ['tv', 'android_vr', 'mweb', 'web_creator', 'ios']
+        
+        for client in clients_to_try:
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'skip_download': True,
+                'format_sort': ['res', 'vcodec:h264', 'ext:mp4:m4a'],
+                'extractor_args': {'youtube': [f'player_client={client}']}
+            }
             try:
-                info = ydl.extract_info(url, download=False)
-                return {
-                    "title": info.get('title', 'Unknown Title'),
-                    "duration": info.get('duration', 0),
-                    "thumbnail": info.get('thumbnail'),
-                    "formats": Extractor._parse_formats(info.get('formats', [])),
-                    "extractor": info.get('extractor')
-                }
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    return {
+                        "title": info.get('title', 'Unknown Title'),
+                        "duration": info.get('duration', 0),
+                        "thumbnail": info.get('thumbnail'),
+                        "formats": Extractor._parse_formats(info.get('formats', [])),
+                        "extractor": info.get('extractor')
+                    }
             except Exception as e:
-                logger.error(f"Error extracting metadata: {str(e)}")
-                raise Exception(f"yt-dlp error: {str(e)}")
+                if 'Sign in to confirm' in str(e) or 'bot' in str(e):
+                    continue
+                else:
+                    raise Exception(f"yt-dlp error: {str(e)}")
+                    
+        raise Exception("YouTube has temporarily blocked your Render server IP for bot-like activity. Please try again later or add cookies.")
 
     @staticmethod
     def _parse_formats(formats: list) -> dict:
@@ -44,8 +52,8 @@ class Extractor:
             # AUDIO
             if f.get('acodec') != 'none' and f.get('acodec') is not None and f.get('vcodec') == 'none':
                 fsize = f.get('filesize') or f.get('filesize_approx')
-                if not fsize and f.get('abr') and info.get('duration'):
-                    fsize = int((f.get('abr') * 1024 / 8) * info.get('duration'))
+                if not fsize and f.get('abr') and f.get('duration'):
+                    fsize = int((f.get('abr') * 1024 / 8) * f.get('duration'))
                     
                 audio_formats.append({
                     "format_id": f.get('format_id'),
@@ -96,8 +104,8 @@ class Extractor:
                     label = "Low (240p)"
 
                 fsize = f.get('filesize') or f.get('filesize_approx')
-                if not fsize and f.get('tbr') and info.get('duration'):
-                    fsize = int((f.get('tbr') * 1024 / 8) * info.get('duration'))
+                if not fsize and f.get('tbr') and f.get('duration'):
+                    fsize = int((f.get('tbr') * 1024 / 8) * f.get('duration'))
                 
                 fmt = {
                     "format_id": f.get('format_id'),
@@ -141,5 +149,3 @@ class Extractor:
             "video": video_formats,
             "audio": audio_formats
         }
-
-
