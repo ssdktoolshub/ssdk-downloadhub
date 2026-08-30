@@ -44,9 +44,9 @@ class UI {
         
         let videoOptions = data.formats.video.length > 0 
             ? data.formats.video.map(f => {
-                const codec = f.vcodec && f.vcodec !== 'none' ? f.vcodec.split('.')[0].toUpperCase() : 'Unknown';
+                
                 const size = f.filesize ? ` - ${(f.filesize / 1024 / 1024).toFixed(1)}MB` : '';
-                return `<option value="${f.format_id}">${f.resolution} - ${codec}${size} (${f.ext})</option>`;
+                return `<option value="${f.format_id}">${f.resolution}${size} (${f.ext})</option>`;
             }).join('')
             : `<option value="">No Video Available</option>`;
             
@@ -190,3 +190,4 @@ if (!document.getElementById('spinner-style')) {
     `;
     document.head.appendChild(style);
 }
+
